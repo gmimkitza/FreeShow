@@ -29,10 +29,20 @@
 
     $: if (!activeDragType) {
         firstLineIndent = item?.specialStyle?.firstLineIndent || 0
-        hangingIndent = item?.specialStyle?.hangingIndent !== undefined ? item.specialStyle.hangingIndent : 90
-        tabStops = Array.isArray(item?.specialStyle?.tabStops) && item.specialStyle.tabStops.length
+        const rawHanging = item?.specialStyle?.hangingIndent
+        const rawTabs = Array.isArray(item?.specialStyle?.tabStops) && item.specialStyle.tabStops.length
             ? [...item.specialStyle.tabStops].sort((a, b) => a - b)
-            : [hangingIndent]
+            : null
+
+        // Unify the first tab stop and hanging indent so they NEVER diverge!
+        const primaryIndent = rawTabs?.[0] !== undefined
+            ? rawTabs[0]
+            : (rawHanging !== undefined ? rawHanging : 90)
+
+        hangingIndent = primaryIndent
+        tabStops = rawTabs && rawTabs.length > 1
+            ? [primaryIndent, ...rawTabs.slice(1)]
+            : [primaryIndent]
     }
 
     function getTargetSlideId(): string {
@@ -122,17 +132,22 @@
         const clickXInSlide = (e.clientX - rect.left) / ratio
         const snapped = Math.max(10, Math.round(clickXInSlide / 5) * 5)
 
-        // If clicked on empty ruler space, add new Tab Stop (Word L-marker)
-        const updatedTabs = [...tabStops, snapped].sort((a, b) => a - b)
-        tabStops = updatedTabs
-        const newIndex = updatedTabs.indexOf(snapped)
+        // If clicked on ruler: if only 1 tab stop or clicked near tabStops[0], update dialogue indent directly
+        let updatedTabs: number[]
+        let newIndex: number
 
-        const patch: Record<string, any> = { tabStops: updatedTabs }
-        // If this newly created tab stop is the first one, also align hangingIndent
-        if (newIndex === 0) {
-            hangingIndent = snapped
-            patch.hangingIndent = snapped
+        if (tabStops.length <= 1 || Math.abs(snapped - tabStops[0]) < 45) {
+            updatedTabs = [snapped, ...tabStops.slice(1)].sort((a, b) => a - b)
+            newIndex = updatedTabs.indexOf(snapped)
+            hangingIndent = updatedTabs[0]
+        } else {
+            updatedTabs = [...tabStops, snapped].sort((a, b) => a - b)
+            newIndex = updatedTabs.indexOf(snapped)
+            if (newIndex === 0) hangingIndent = snapped
         }
+
+        tabStops = updatedTabs
+        const patch: Record<string, any> = { tabStops: updatedTabs, hangingIndent }
 
         updateSpecialStyleRealtime(patch)
         commitSpecialStyle(patch)

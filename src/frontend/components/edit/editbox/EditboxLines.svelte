@@ -99,11 +99,9 @@
     $: tabStops = Array.isArray(item?.specialStyle?.tabStops) && item.specialStyle.tabStops.length
         ? [...item.specialStyle.tabStops].sort((a: number, b: number) => a - b)
         : (item?.specialStyle?.hangingIndent ? [item.specialStyle.hangingIndent] : [90])
-    $: hangingIndent = item?.specialStyle?.hangingIndent !== undefined && item?.specialStyle?.hangingIndent !== null
-        ? item.specialStyle.hangingIndent
-        : (tabStops[0] || 0)
+    $: hangingIndent = tabStops[0] !== undefined ? tabStops[0] : (item?.specialStyle?.hangingIndent || 90)
     $: firstLineIndent = item?.specialStyle?.firstLineIndent || 0
-    $: tabSize = tabStops[0] || hangingIndent || 90
+    $: tabSize = hangingIndent
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
     $: lineStyleRadius = lineRadius ? `border-radius: ${lineRadius}px;` : ""
     $: lineStyleBg = lineBg ? `background: ${lineBg};` : ""
@@ -658,6 +656,18 @@
     function textElemKeydown(e: KeyboardEvent) {
         if (e.key === "Tab") {
             e.preventDefault()
+            const sel = window.getSelection()
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0)
+                if (range.collapsed && range.startContainer.nodeType === Node.TEXT_NODE) {
+                    const textNode = range.startContainer as Text
+                    const offset = range.startOffset
+                    if (offset > 0 && textNode.textContent?.[offset - 1] === " ") {
+                        range.setStart(textNode, offset - 1)
+                        range.deleteContents()
+                    }
+                }
+            }
             document.execCommand("insertText", false, "\t")
             return
         }

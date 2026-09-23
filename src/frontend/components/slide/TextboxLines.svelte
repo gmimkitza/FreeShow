@@ -159,11 +159,9 @@
     $: tabStops = Array.isArray(item?.specialStyle?.tabStops) && item.specialStyle.tabStops.length
         ? [...item.specialStyle.tabStops].sort((a: number, b: number) => a - b)
         : (item?.specialStyle?.hangingIndent ? [item.specialStyle.hangingIndent] : [90])
-    $: hangingIndent = item?.specialStyle?.hangingIndent !== undefined && item?.specialStyle?.hangingIndent !== null
-        ? item.specialStyle.hangingIndent
-        : (tabStops[0] || 0)
+    $: hangingIndent = tabStops[0] !== undefined ? tabStops[0] : (item?.specialStyle?.hangingIndent || 90)
     $: firstLineIndent = item?.specialStyle?.firstLineIndent || 0
-    $: tabSize = tabStops[0] || hangingIndent || 90
+    $: tabSize = hangingIndent
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
     $: lineStyle = (lineRadius ? `border-radius: ${lineRadius}px;` : "") +
         (lineBg ? `background: ${lineBg};` : "") +
@@ -173,7 +171,9 @@
     function formatLineTabs(renderedText: string, tabOffset: number = 0): string {
         if (!renderedText || !renderedText.includes("\t")) return renderedText
 
-        const parts = renderedText.split("\t")
+        // Strip accidental spaces before tab (e.g. "P: \t" -> "P:\t")
+        const cleanText = renderedText.replaceAll(/ +\t/g, "\t")
+        const parts = cleanText.split("\t")
         let result = ""
         const defaultStep = tabStops.length > 1 ? Math.max(20, tabStops[1] - tabStops[0]) : (tabStops[0] || 90)
 
@@ -220,7 +220,7 @@
         const res = texts.map((t) => ({ ...t }))
         for (let i = 1; i < res.length; i++) {
             if (res[i].value && res[i].value.startsWith("\t") && res[i - 1].value && !res[i - 1].value.endsWith("\t")) {
-                res[i - 1].value += "\t"
+                res[i - 1].value = res[i - 1].value.replace(/ +$/, "") + "\t"
                 res[i].value = res[i].value.slice(1)
             }
         }
