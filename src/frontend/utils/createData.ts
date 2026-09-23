@@ -8,6 +8,7 @@ import { activePopup, audioFolders, deletedDefaults, effects, folders, language,
 import { stageShows, templateCategories } from "./../stores"
 import { translateText } from "./language"
 import { save } from "./save"
+import { getLiturgiTemplates, LITURGI_APP_CATEGORY } from "../LiturgiApp/templates"
 
 export function createData(paths: MainFilePaths) {
     if (!get(shows).default) {
@@ -547,10 +548,27 @@ function createDefaultTemplates() {
     const deletedIds = get(deletedDefaults).templates || []
     const defaultTemplates = getDefaultTemplates()
 
+    // Register LiturgiApp category
+    templateCategories.update((cats) => {
+        if (!cats[LITURGI_APP_CATEGORY.id]) {
+            cats[LITURGI_APP_CATEGORY.id] = {
+                default: true,
+                name: LITURGI_APP_CATEGORY.name,
+                icon: LITURGI_APP_CATEGORY.icon
+            }
+        }
+        return cats
+    })
+
     templates.update((a) => {
         Object.keys(defaultTemplates).forEach((id) => {
             // if deleted or exists, skip
-            if (deletedIds.includes(id) || a[id]) return
+            if (deletedIds.includes(id)) return
+            if (a[id] && id === "dialog_liturgi") {
+                a[id] = defaultTemplates[id]
+                return
+            }
+            if (a[id]) return
             a[id] = defaultTemplates[id]
         })
 
@@ -979,50 +997,7 @@ function getDefaultTemplates() {
         ]
     }
 
-    a.dialog_liturgi = {
-        isDefault: true,
-        name: "Dialog Liturgi",
-        color: "#0b6623",
-        category: "presentation",
-        items: [
-            {
-                style: "left:60px;top:50px;width:1800px;height:980px;background-color:#ffffff;border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,0.5);",
-                align: "",
-                lines: [{ align: "", text: [{ value: "", style: "" }] }]
-            },
-            {
-                style: "left:140px;top:100px;width:1640px;height:90px;",
-                align: "",
-                lines: [{ align: "text-align: left;", text: [{ value: "TAHBISAN", style: "font-family:Arial, sans-serif;font-size:55px;font-weight:bold;color:#0b6623;letter-spacing:2px;text-transform:uppercase;" }] }]
-            },
-            {
-                style: "left:140px;top:220px;width:1640px;height:750px;",
-                align: "",
-                lines: [
-                    {
-                        align: "text-align: left;",
-                        text: [
-                            { value: "P:   ", style: "font-family:Arial, sans-serif;font-weight:bold;font-size:62px;color:#000000;line-height:1.4em;" },
-                            { value: "Pertolongan kepada kita adalah dalam nama TUHAN, Allah Pencipta langit dan bumi, yang memelihara kesetiaan-Nya sampai selama-lamanya dan tidak meninggalkan perbuatan tangan-Nya.", style: "font-family:Arial, sans-serif;font-weight:normal;font-size:62px;color:#000000;line-height:1.4em;" }
-                        ]
-                    },
-                    {
-                        align: "text-align: left;",
-                        text: [{ value: "", style: "font-size:30px;" }]
-                    },
-                    {
-                        align: "text-align: left;",
-                        text: [
-                            { value: "J:   ", style: "font-family:Arial, sans-serif;font-weight:bold;font-size:62px;color:#000000;line-height:1.4em;" },
-                            { value: "Amin.", style: "font-family:Arial, sans-serif;font-weight:bold;font-size:62px;color:#000000;line-height:1.4em;" }
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
-
-    return { ...a, ...getDefaultScriptureTemplates() }
+    return { ...a, ...getLiturgiTemplates(), ...getDefaultScriptureTemplates() }
 }
 
 function getDefaultScriptureTemplates() {
