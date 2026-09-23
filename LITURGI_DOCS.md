@@ -55,14 +55,18 @@ tab-size: ${hangingIndent}px;
 * **Baris Ke-2, Ke-3, dst:** Otomatis membungkus (*wrap*) rata kiri di posisi `90px`.
 * Teks dialog dari pembicara `P:` dan respon `J:` menjadi **lurus sejajar vertikal 100% presisi piksel**.
 
-### D. Penggaris Visual Interaktif (*Visual Ruler*)
-* Dibuat komponen baru: **`src/frontend/components/edit/editbox/Ruler.svelte`**.
-* Muncul tepat di atas kotak teks yang sedang aktif/dipilih di mode **Edit**.
-* **Fitur Penggaris:**
+### D. Penggaris Visual Interaktif (*Visual Ruler* ala Microsoft Word)
+* Dibuat komponen baru: **`src/frontend/components/edit/editbox/Ruler.svelte`** yang tersemat langsung di atas kotak teks (Pilihan A).
+* **Fitur Penggaris Autentik ala Word:**
   * Garis batas tepi kiri nol (`0px`).
-  * Skala ukuran (*tick marks*) setiap 20px, 50px, dan 100px.
-  * **Pin Marker (🔻):** Penanda segitiga yang dapat diklik atau digeser (*drag*) menggunakan mouse ke kanan/kiri untuk mengubah jarak indentasi secara langsung (*real-time*).
-  * **Garis Panduan Vertikal (*Drop Guide Line*):** Garis putus-putus berwarna turun melintasi teks ketika marker digeser sehingga pengguna dapat melihat kelurusan teks terhadap batas indentasi.
+  * Skala ukuran unit (`1, 2, 3, 4, 5...`) dengan tick marks halus setiap 10px, 25px, dan 50px.
+  * **Segitiga Atas (⯆ - First Line Indent):** Mengatur posisi awal baris pertama (tempat label `P:` atau `J:`).
+  * **Segitiga Bawah (⯅ - Hanging Indent):** Mengatur batas lekukan untuk baris ke-2, ke-3, dst saat kalimat panjang membungkus.
+  * **Multi-Tab Stop Markers (Simbol Siku `L`):**
+    * **Klik untuk Menambah:** Klik sekali di sembarang posisi mistar penggaris untuk menaruh titik tab baru (simbol siku `L`).
+    * **Geser untuk Mengatur (*Drag*):** Tarik tanda `L` ke kiri atau kanan secara langsung (*real-time*).
+    * **Garis Panduan Vertikal (*Drop Guide Line*):** Garis putus-putus berwarna turun melintasi teks ketika marker digeser.
+    * **Tarik Keluar untuk Menghapus (*Drag Off to Delete*):** Menarik tanda `L` ke bawah keluar dari mistar penggaris (atau klik ganda) akan menghapus titik tab tersebut.
   * Terintegrasi penuh dengan sistem **Undo / Redo (Ctrl+Z / Ctrl+Y)**.
 
 ### E. Kontrol Input Angka di Sidebar Kanan (Inspector Textbox)

@@ -41,7 +41,9 @@ export function getLiturgiTemplates(): Record<string, Template> {
                     style: "left:140px;top:220px;width:1640px;height:750px;",
                     align: "",
                     specialStyle: {
-                        hangingIndent: 90
+                        firstLineIndent: 0,
+                        hangingIndent: 90,
+                        tabStops: [90]
                     },
                     lines: [
                         {

@@ -157,8 +157,10 @@
     $: lineRadius = item?.specialStyle?.lineRadius || 0
     $: lineBg = item?.specialStyle?.lineBg
     $: hangingIndent = item?.specialStyle?.hangingIndent || 0
+    $: firstLineIndent = item?.specialStyle?.firstLineIndent || 0
+    $: tabSize = item?.specialStyle?.tabStops?.[0] || hangingIndent || 90
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
-    $: lineStyle = (lineRadius ? `border-radius: ${lineRadius}px;` : "") + (lineBg ? `background: ${lineBg};` : "") + (hangingIndent ? `;padding-left: ${hangingIndent}px;text-indent: -${hangingIndent}px;tab-size: ${hangingIndent}px;` : "")
+    $: lineStyle = (lineRadius ? `border-radius: ${lineRadius}px;` : "") + (lineBg ? `background: ${lineBg};` : "") + (hangingIndent ? `;padding-left: ${hangingIndent}px;text-indent: ${firstLineIndent - hangingIndent}px;tab-size: ${tabSize}px;` : "")
 
     $: textAnimation = animationStyle.text || ""
 

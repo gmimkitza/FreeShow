@@ -97,6 +97,8 @@
     $: lineRadius = item?.specialStyle?.lineRadius || 0
     $: lineBg = item?.specialStyle?.lineBg
     $: hangingIndent = item?.specialStyle?.hangingIndent || 0
+    $: firstLineIndent = item?.specialStyle?.firstLineIndent || 0
+    $: tabSize = item?.specialStyle?.tabStops?.[0] || hangingIndent || 90
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
     $: lineStyleRadius = lineRadius ? `border-radius: ${lineRadius}px;` : ""
     $: lineStyleBg = lineBg ? `background: ${lineBg};` : ""
@@ -764,7 +766,7 @@
                 on:copy={handleCopy}
                 on:cut={handleCut}
                 bind:innerHTML={html}
-                style="--hanging-indent: {hangingIndent}px;{isAuto && autoSize && !plain ? `--auto-size: ${autoSize}px;` : ''}{!plain ? lineStyleBox : ''}{plain ? '' : typeof item.align === 'string' ? item.align.replace('align-items', 'justify-content') : ''}"
+                style="--hanging-indent: {hangingIndent}px;--first-line-indent: {firstLineIndent}px;--tab-size: {tabSize}px;{isAuto && autoSize && !plain ? `--auto-size: ${autoSize}px;` : ''}{!plain ? lineStyleBox : ''}{plain ? '' : typeof item.align === 'string' ? item.align.replace('align-items', 'justify-content') : ''}"
                 class:height={item.lines?.length < 2 && !item.lines?.[0]?.text[0]?.value.length}
                 class:tallLines={chordsMode}
             />
@@ -842,8 +844,8 @@
         text-wrap: balance; /* balanced breaking, looks much cleaner */
         white-space: pre-wrap; /* preserve special spaces from Text edit */
         padding-left: var(--hanging-indent, 0px);
-        text-indent: calc(-1 * var(--hanging-indent, 0px));
-        tab-size: var(--hanging-indent, 0px);
+        text-indent: calc(var(--first-line-indent, 0px) - var(--hanging-indent, 0px));
+        tab-size: var(--tab-size, var(--hanging-indent, 90px));
     }
     .edit :global(.break.normalWrap) {
         text-wrap: unset;
