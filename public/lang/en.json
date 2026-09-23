@@ -1074,6 +1074,8 @@
         "auto_size": "Auto size",
         "no_wrap": "Text on one line",
         "line_spacing": "Line spacing",
+        "hanging_indent": "Hanging indent",
+        "ruler": "Ruler",
         "line_radius": "Line radius",
         "line_height": "Line height",
         "letter_spacing": "Letter spacing",

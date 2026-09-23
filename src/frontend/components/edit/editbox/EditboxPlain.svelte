@@ -14,6 +14,7 @@
     import Button from "../../inputs/Button.svelte"
     import { isoLanguages } from "../../main/popups/localization/isoLanguages"
     import Movebox from "../../system/Movebox.svelte"
+    import Ruler from "./Ruler.svelte"
     import { isConditionMet } from "../scripts/itemHelpers"
     import { getItemText } from "../scripts/textStyle"
 
@@ -136,6 +137,9 @@
 <!-- all icons are square, so only corner resizers need to be active -->
 {#if !hideMovebox}
     <Movebox {ratio} itemStyle={item?.style} active={$activeEdit.items.includes(index)} onlyCorners={item?.type === "icon" && item?.id !== "empty"} />
+    {#if $activeEdit.items.includes(index) && item?.lines}
+        <Ruler {item} {index} {ratio} />
+    {/if}
 {/if}
 
 <div class="actions">

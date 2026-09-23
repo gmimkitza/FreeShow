@@ -201,7 +201,10 @@ export const textSections: { [key: string]: EditBoxSection } = {
                 { id: "specialStyle.lineBg", type: "color", value: "", values: { label: "edit.background_color", allowGradients: true, allowOpacity: true, allowEmpty: true, noLabel: true } }
                 // { id: "specialStyle.opacity", type: "number", value: 1, values: { label: "edit.background_opacity", step: 0.1, decimals: 1, min: 0.1, max: 1, inputMultiplier: 10 } }
             ],
-            [{ id: "specialStyle.lineRadius", type: "number", value: 0, values: { label: "edit.line_radius", max: 100 } }]
+            [
+                { id: "specialStyle.lineRadius", type: "number", value: 0, values: { label: "edit.line_radius", max: 100 } },
+                { id: "specialStyle.hangingIndent", type: "number", value: 0, extension: "px", values: { label: "edit.hanging_indent", max: 500, min: 0, step: 5 } }
+            ]
         ]
     },
     list: {

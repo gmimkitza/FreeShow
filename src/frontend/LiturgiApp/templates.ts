@@ -40,12 +40,15 @@ export function getLiturgiTemplates(): Record<string, Template> {
                 {
                     style: "left:140px;top:220px;width:1640px;height:750px;",
                     align: "",
+                    specialStyle: {
+                        hangingIndent: 90
+                    },
                     lines: [
                         {
                             align: "text-align: left;",
                             text: [
                                 {
-                                    value: "P:   ",
+                                    value: "P:\t",
                                     style: "font-family: Arial, sans-serif;font-weight: bold;font-size: 62px;color: #000000;line-height: 1.45em;"
                                 },
                                 {
@@ -62,7 +65,7 @@ export function getLiturgiTemplates(): Record<string, Template> {
                             align: "text-align: left;",
                             text: [
                                 {
-                                    value: "J:   ",
+                                    value: "J:\t",
                                     style: "font-family: Arial, sans-serif;font-weight: bold;font-size: 62px;color: #000000;line-height: 1.45em;"
                                 },
                                 {

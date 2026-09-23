@@ -96,9 +96,11 @@
     $: lineGap = item?.specialStyle?.lineGap
     $: lineRadius = item?.specialStyle?.lineRadius || 0
     $: lineBg = item?.specialStyle?.lineBg
+    $: hangingIndent = item?.specialStyle?.hangingIndent || 0
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
     $: lineStyleRadius = lineRadius ? `border-radius: ${lineRadius}px;` : ""
     $: lineStyleBg = lineBg ? `background: ${lineBg};` : ""
+    $: lineStyleHangingIndent = hangingIndent ? `padding-left: ${hangingIndent}px;text-indent: -${hangingIndent}px;tab-size: ${hangingIndent}px;` : ""
 
     function getStyle() {
         if (composing) return
@@ -132,6 +134,12 @@
 
     function keydown(e: KeyboardEvent) {
         if (isComposing(e)) return
+
+        if (e.key === "Tab") {
+            e.preventDefault()
+            document.execCommand("insertText", false, "\t")
+            return
+        }
 
         if (e.key === "Enter" && e.shiftKey) {
             // by default the browser contenteditable will add a <br> instead of our custom <span class="break"> when pressing SHIFT
@@ -320,6 +328,11 @@
                     line.align = (typeof line.align === "string" ? line.align : "").replace(lineStyleRadius, "")
                 })
             }
+            if (lineStyleHangingIndent) {
+                newLines.forEach((line) => {
+                    line.align = (typeof line.align === "string" ? line.align : "").replace(lineStyleHangingIndent, "")
+                })
+            }
 
             history({ id: "SHOW_ITEMS", newData: { key: "lines", data: clone([newLines]), slides: [ref.id], items: [index], showId: ref.showId }, location: { page: "none", override: itemRef } })
 
@@ -457,9 +470,9 @@
         new Array(...textElem.children).forEach((line: any, i) => {
             const sourceLine = plain ? attrIndex(line, "data-line-index", i) : i
             let align: string = plain ? (typeof item.lines?.[sourceLine]?.align === "string" ? (item.lines?.[sourceLine]?.align as string) : "") : line.getAttribute("style") || ""
-            align = align.replaceAll(lineStyleBg, "").replaceAll(lineStyleRadius, "") + ";"
+            align = align.replaceAll(lineStyleBg, "").replaceAll(lineStyleRadius, "").replaceAll(lineStyleHangingIndent, "") + ";"
             pos++
-            currentStyle += align + lineStyleBg + lineStyleRadius
+            currentStyle += align + lineStyleBg + lineStyleRadius + lineStyleHangingIndent
 
             let newLine = { align, text: [] as any[] }
             let lineChords: any[] = []
