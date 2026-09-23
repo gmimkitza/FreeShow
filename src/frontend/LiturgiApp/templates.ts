@@ -14,13 +14,7 @@ export function getLiturgiTemplates(): Record<string, Template> {
             color: "#0b6623",
             category: "liturgiapp",
             items: [
-                // 1. Kartu / Box Putih (Latar Belakang Kontainer)
-                {
-                    style: "left:60px;top:50px;width:1800px;height:980px;background-color:#ffffff;border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,0.5);",
-                    align: "",
-                    lines: [{ align: "", text: [{ value: "", style: "" }] }]
-                },
-                // 2. Header Bagian Liturgi ("TAHBISAN")
+                // 1. Judul Header Liturgi ("Tahbisan")
                 {
                     style: "left:140px;top:100px;width:1640px;height:90px;",
                     align: "",
@@ -29,49 +23,85 @@ export function getLiturgiTemplates(): Record<string, Template> {
                             align: "text-align: left;",
                             text: [
                                 {
-                                    value: "TAHBISAN",
-                                    style: "font-family: Arial, sans-serif;font-size: 55px;font-weight: bold;color: #0b6623;letter-spacing: 2px;text-transform: uppercase;"
+                                    style: "font-weight: bold;color: #0b6623;letter-spacing: 2px;font-family:'Fractul';font-size:92px;text-shadow:0 0 0 rgb(0 0 0 / 0);",
+                                    value: "Tahbisan"
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    auto: false
                 },
-                // 3. Teks Dialog Responsif (P & J)
+                // 2. Isi Teks Dialog Pelayan (P)
                 {
-                    style: "left:140px;top:220px;width:1640px;height:750px;",
+                    style: "left:282.00px;width:1498.00px;height:494.58px;top:292.71px;",
+                    align: "align-items:flex-start;",
+                    lines: [
+                        {
+                            align: "text-align: left;",
+                            text: [
+                                {
+                                    style: "font-family: Arial, sans-serif;line-height: 1.45em;font-size:86px;color:#000000;text-shadow:0 0 0 rgb(0 0 0 / 0);",
+                                    value: "Pertolongan kepada kita adalah dalam nama TUHAN, Allah Pencipta langit dan bumi, yang memelihara kesetiaan-Nya sampai selama-lamanya dan tidak meninggalkan perbuatan tangan-Nya."
+                                }
+                            ]
+                        }
+                    ],
+                    list: {
+                        enabled: false
+                    },
+                    auto: false
+                },
+                // 3. Label Jemaat ("J:")
+                {
+                    style: "width:117.25px;height:81.00px;top:794.75px;left:141px;",
+                    align: "align-items:flex-start;",
+                    lines: [
+                        {
+                            align: "text-align: left;",
+                            text: [
+                                {
+                                    style: "font-family: Arial, sans-serif;font-weight: bold;line-height: 1.45em;font-size:86px;color:#000000;text-shadow:0 0 0 rgb(0 0 0 / 0);",
+                                    value: "J:"
+                                }
+                            ]
+                        }
+                    ],
+                    auto: false
+                },
+                // 4. Isi Teks Dialog Jemaat (J - "Amin")
+                {
+                    style: "height:80.25px;width:1281.10px;top:795.50px;left:498.90px;",
+                    type: "text",
                     align: "",
                     lines: [
                         {
                             align: "text-align: left;",
                             text: [
                                 {
-                                    value: "P:   ",
-                                    style: "font-family: Arial, sans-serif;font-weight: bold;font-size: 62px;color: #000000;line-height: 1.45em;"
-                                },
-                                {
-                                    value: "Pertolongan kepada kita adalah dalam nama TUHAN, Allah Pencipta langit dan bumi, yang memelihara kesetiaan-Nya sampai selama-lamanya dan tidak meninggalkan perbuatan tangan-Nya.",
-                                    style: "font-family: Arial, sans-serif;font-weight: normal;font-size: 62px;color: #111111;line-height: 1.45em;"
+                                    style: "font-family: Arial, sans-serif;font-weight: bold;line-height: 1.45em;font-size:86px;color:#000000;text-shadow:0 0 0 rgb(0 0 0 / 0);",
+                                    value: "Amin"
                                 }
                             ]
-                        },
-                        {
-                            align: "text-align: left;",
-                            text: [{ value: "", style: "font-size: 30px;" }]
-                        },
+                        }
+                    ],
+                    auto: false
+                },
+                // 5. Label Pelayan ("P:")
+                {
+                    style: "left:140.00px;width:117.25px;height:81.00px;top:292.71px;",
+                    align: "align-items:flex-start;",
+                    lines: [
                         {
                             align: "text-align: left;",
                             text: [
                                 {
-                                    value: "J:   ",
-                                    style: "font-family: Arial, sans-serif;font-weight: bold;font-size: 62px;color: #000000;line-height: 1.45em;"
-                                },
-                                {
-                                    value: "Amin.",
-                                    style: "font-family: Arial, sans-serif;font-weight: bold;font-size: 62px;color: #000000;line-height: 1.45em;"
+                                    style: "font-family: Arial, sans-serif;font-weight: bold;line-height: 1.45em;font-size:86px;color:#000000;text-shadow:0 0 0 rgb(0 0 0 / 0);",
+                                    value: "P:"
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    auto: false
                 }
             ]
         }
