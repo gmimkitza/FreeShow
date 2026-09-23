@@ -182,16 +182,15 @@ export class EditboxHelper {
         const lineStyleBg = item.specialStyle?.lineBg ? `background: ${item.specialStyle.lineBg};` : ""
         const lineStyleRadius = item.specialStyle?.lineRadius ? `border-radius: ${item.specialStyle.lineRadius}px;` : ""
         const hangingIndent = item.specialStyle?.hangingIndent || 0
-        const lineHangingIndent = hangingIndent ? `padding-left: ${hangingIndent}px;text-indent: -${hangingIndent}px;tab-size: ${hangingIndent}px;` : ""
         const listStyle = "" // item.list?.enabled ? `;list-style${item.list?.style?.includes("disclosure") ? "-type:" : ": inside"} ${item.list?.style || "disc"};` : "" // item.list?.enabled ? ";display: list-item;" : ""
 
         // a contenteditable without any line blocks can't receive line breaks, so always render at least one
         const lines: Line[] = item?.lines?.length ? item.lines : [{ align: "", text: [{ style: "", value: "" }] }]
 
         lines.forEach((line, i) => {
-            const align = (typeof line.align === "string" ? line.align : "").replaceAll(lineStyleBg, "").replaceAll(lineStyleRadius, "").replaceAll(lineHangingIndent, "") + ";"
-            currentStyle += align + lineStyleBg + lineStyleRadius + lineHangingIndent // + line.chords?.map((a) => a.key)
-            const style = align || lineStyleBg || lineStyleRadius || lineHangingIndent || listStyle ? 'style="' + align + lineStyleBg + lineStyleRadius + lineHangingIndent + listStyle + '"' : ""
+            const align = (typeof line.align === "string" ? line.align : "").replaceAll(lineStyleBg, "").replaceAll(lineStyleRadius, "") + ";"
+            currentStyle += align + lineStyleBg + lineStyleRadius // + line.chords?.map((a) => a.key)
+            const style = align || lineStyleBg || lineStyleRadius || listStyle ? 'style="' + align + lineStyleBg + lineStyleRadius + listStyle + '"' : ""
 
             const normalWrap = useNormalWrap || hangingIndent > 0 || align.includes("justify") || align.includes("left") || JSON.stringify(line).includes("nowrap")
 

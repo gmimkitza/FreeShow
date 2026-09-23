@@ -100,7 +100,6 @@
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
     $: lineStyleRadius = lineRadius ? `border-radius: ${lineRadius}px;` : ""
     $: lineStyleBg = lineBg ? `background: ${lineBg};` : ""
-    $: lineStyleHangingIndent = hangingIndent ? `padding-left: ${hangingIndent}px;text-indent: -${hangingIndent}px;tab-size: ${hangingIndent}px;` : ""
 
     function getStyle() {
         if (composing) return
@@ -134,12 +133,6 @@
 
     function keydown(e: KeyboardEvent) {
         if (isComposing(e)) return
-
-        if (e.key === "Tab") {
-            e.preventDefault()
-            document.execCommand("insertText", false, "\t")
-            return
-        }
 
         if (e.key === "Enter" && e.shiftKey) {
             // by default the browser contenteditable will add a <br> instead of our custom <span class="break"> when pressing SHIFT
@@ -328,11 +321,6 @@
                     line.align = (typeof line.align === "string" ? line.align : "").replace(lineStyleRadius, "")
                 })
             }
-            if (lineStyleHangingIndent) {
-                newLines.forEach((line) => {
-                    line.align = (typeof line.align === "string" ? line.align : "").replace(lineStyleHangingIndent, "")
-                })
-            }
 
             history({ id: "SHOW_ITEMS", newData: { key: "lines", data: clone([newLines]), slides: [ref.id], items: [index], showId: ref.showId }, location: { page: "none", override: itemRef } })
 
@@ -470,9 +458,9 @@
         new Array(...textElem.children).forEach((line: any, i) => {
             const sourceLine = plain ? attrIndex(line, "data-line-index", i) : i
             let align: string = plain ? (typeof item.lines?.[sourceLine]?.align === "string" ? (item.lines?.[sourceLine]?.align as string) : "") : line.getAttribute("style") || ""
-            align = align.replaceAll(lineStyleBg, "").replaceAll(lineStyleRadius, "").replaceAll(lineStyleHangingIndent, "") + ";"
+            align = align.replaceAll(lineStyleBg, "").replaceAll(lineStyleRadius, "") + ";"
             pos++
-            currentStyle += align + lineStyleBg + lineStyleRadius + lineStyleHangingIndent
+            currentStyle += align + lineStyleBg + lineStyleRadius
 
             let newLine = { align, text: [] as any[] }
             let lineChords: any[] = []
@@ -661,6 +649,12 @@
     }
 
     function textElemKeydown(e: KeyboardEvent) {
+        if (e.key === "Tab") {
+            e.preventDefault()
+            document.execCommand("insertText", false, "\t")
+            return
+        }
+
         if ((e.key === "Enter" || e.key === "Backspace" || e.key === "Delete") && !isComposing(e)) {
             recentKeyboardLineMutationAt = Date.now()
         }
@@ -770,7 +764,7 @@
                 on:copy={handleCopy}
                 on:cut={handleCut}
                 bind:innerHTML={html}
-                style="{isAuto && autoSize && !plain ? `--auto-size: ${autoSize}px;` : ''}{!plain ? lineStyleBox : ''}{plain ? '' : typeof item.align === 'string' ? item.align.replace('align-items', 'justify-content') : ''}"
+                style="--hanging-indent: {hangingIndent}px;{isAuto && autoSize && !plain ? `--auto-size: ${autoSize}px;` : ''}{!plain ? lineStyleBox : ''}{plain ? '' : typeof item.align === 'string' ? item.align.replace('align-items', 'justify-content') : ''}"
                 class:height={item.lines?.length < 2 && !item.lines?.[0]?.text[0]?.value.length}
                 class:tallLines={chordsMode}
             />
@@ -847,6 +841,9 @@
     .edit :global(.break) {
         text-wrap: balance; /* balanced breaking, looks much cleaner */
         white-space: pre-wrap; /* preserve special spaces from Text edit */
+        padding-left: var(--hanging-indent, 0px);
+        text-indent: calc(-1 * var(--hanging-indent, 0px));
+        tab-size: var(--hanging-indent, 0px);
     }
     .edit :global(.break.normalWrap) {
         text-wrap: unset;
