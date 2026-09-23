@@ -27,7 +27,7 @@
     let hangingIndent = 90
     let tabStops: number[] = [90]
 
-    $: {
+    $: if (!activeDragType) {
         firstLineIndent = item?.specialStyle?.firstLineIndent || 0
         hangingIndent = item?.specialStyle?.hangingIndent !== undefined ? item.specialStyle.hangingIndent : 90
         tabStops = Array.isArray(item?.specialStyle?.tabStops) && item.specialStyle.tabStops.length
@@ -43,6 +43,11 @@
     }
 
     function updateSpecialStyleRealtime(patch: Record<string, any>) {
+        if (item) {
+            if (!item.specialStyle) item.specialStyle = {}
+            Object.assign(item.specialStyle, patch)
+        }
+
         if ($activeEdit.type === "overlay" && $activeEdit.id) {
             overlays.update((o) => {
                 if (o[$activeEdit.id!]?.items?.[index]) {
@@ -61,9 +66,10 @@
             })
         } else {
             const slideId = getTargetSlideId()
-            if ($activeShow && slideId) {
+            const showId = $activeShow?.id || $activeEdit.showId || ""
+            if (showId && slideId) {
                 showsCache.update((cache) => {
-                    const slide = cache[$activeShow!]?.slides?.[slideId]
+                    const slide = cache[showId]?.slides?.[slideId]
                     if (slide?.items?.[index]) {
                         if (!slide.items[index].specialStyle) slide.items[index].specialStyle = {}
                         Object.assign(slide.items[index].specialStyle, patch)
@@ -81,7 +87,7 @@
         if ($activeEdit.type === "overlay" || $activeEdit.type === "template") {
             const store = $activeEdit.type === "overlay" ? $overlays : $templates
             const currentItem = store[$activeEdit.id!]?.items?.[index]
-            const specialStyle = clone(currentItem?.specialStyle || {})
+            const specialStyle = clone(currentItem?.specialStyle || item?.specialStyle || {})
             Object.assign(specialStyle, patch)
 
             history({
@@ -91,14 +97,16 @@
                 location: { page: "edit", id: $activeEdit.type + "_items", override: "rulerStyle_" + index }
             })
         } else {
-            const currentItem = $showsCache[$activeShow!]?.slides?.[slideId]?.items?.[index]
-            const specialStyle = clone(currentItem?.specialStyle || {})
+            const showId = $activeShow?.id || $activeEdit.showId || ""
+            if (!showId) return
+            const currentItem = $showsCache[showId]?.slides?.[slideId]?.items?.[index]
+            const specialStyle = clone(currentItem?.specialStyle || item?.specialStyle || {})
             Object.assign(specialStyle, patch)
 
             history({
                 id: "setItems",
                 newData: { specialStyle },
-                location: { page: "edit", show: $activeShow!, slide: slideId, items: [index], override: "rulerStyle_" + slideId + "_" + index }
+                location: { page: "edit", show: showId, slide: slideId, items: [index], override: "rulerStyle_" + slideId + "_" + index }
             })
         }
     }
@@ -119,8 +127,15 @@
         tabStops = updatedTabs
         const newIndex = updatedTabs.indexOf(snapped)
 
-        updateSpecialStyleRealtime({ tabStops: updatedTabs })
-        commitSpecialStyle({ tabStops: updatedTabs })
+        const patch: Record<string, any> = { tabStops: updatedTabs }
+        // If this newly created tab stop is the first one, also align hangingIndent
+        if (newIndex === 0) {
+            hangingIndent = snapped
+            patch.hangingIndent = snapped
+        }
+
+        updateSpecialStyleRealtime(patch)
+        commitSpecialStyle(patch)
 
         // Immediately start dragging the newly created tab stop
         activeDragType = "tab"
@@ -175,10 +190,18 @@
     function deleteTab(e: MouseEvent, tIndex: number) {
         e.preventDefault()
         e.stopPropagation()
-        const updated = tabStops.filter((_, i) => i !== tIndex)
+        let updated = tabStops.filter((_, i) => i !== tIndex)
+        if (updated.length === 0) {
+            updated = [hangingIndent || 90]
+        }
         tabStops = updated
-        updateSpecialStyleRealtime({ tabStops: updated })
-        commitSpecialStyle({ tabStops: updated })
+        const patch: Record<string, any> = { tabStops: updated }
+        if (hangingIndent !== updated[0]) {
+            hangingIndent = updated[0]
+            patch.hangingIndent = hangingIndent
+        }
+        updateSpecialStyleRealtime(patch)
+        commitSpecialStyle(patch)
     }
 
     function onWindowMouseMove(e: MouseEvent) {
@@ -192,7 +215,11 @@
             updateSpecialStyleRealtime({ firstLineIndent: snapped })
         } else if (activeDragType === "hanging") {
             hangingIndent = snapped
-            updateSpecialStyleRealtime({ hangingIndent: snapped })
+            const updated = [...tabStops]
+            if (updated.length > 0) updated[0] = snapped
+            else updated.push(snapped)
+            tabStops = updated
+            updateSpecialStyleRealtime({ hangingIndent: snapped, tabStops: updated })
         } else if (activeDragType === "tab" && activeDragIndex > -1) {
             // If dragged down vertically (> 25px off ruler), mark for deletion
             isMarkedForDelete = deltaY > 25
@@ -200,7 +227,13 @@
             const updated = [...tabStops]
             updated[activeDragIndex] = snapped
             tabStops = updated
-            updateSpecialStyleRealtime({ tabStops: updated })
+
+            const patch: Record<string, any> = { tabStops: updated }
+            if (activeDragIndex === 0) {
+                hangingIndent = snapped
+                patch.hangingIndent = snapped
+            }
+            updateSpecialStyleRealtime(patch)
         }
     }
 
@@ -210,20 +243,35 @@
         if (activeDragType === "firstLine") {
             commitSpecialStyle({ firstLineIndent })
         } else if (activeDragType === "hanging") {
-            commitSpecialStyle({ hangingIndent })
+            const updated = [...tabStops]
+            if (updated.length > 0) updated[0] = hangingIndent
+            else updated.push(hangingIndent)
+            commitSpecialStyle({ hangingIndent, tabStops: updated })
         } else if (activeDragType === "tab" && activeDragIndex > -1) {
             if (isMarkedForDelete) {
                 // Delete tab stop
-                const updated = tabStops.filter((_, i) => i !== activeDragIndex).sort((a, b) => a - b)
+                let updated = tabStops.filter((_, i) => i !== activeDragIndex).sort((a, b) => a - b)
+                if (updated.length === 0) {
+                    updated = [hangingIndent || 90]
+                }
                 tabStops = updated
-                updateSpecialStyleRealtime({ tabStops: updated })
-                commitSpecialStyle({ tabStops: updated })
+                const patch: Record<string, any> = { tabStops: updated }
+                if (hangingIndent !== updated[0]) {
+                    hangingIndent = updated[0]
+                    patch.hangingIndent = hangingIndent
+                }
+                updateSpecialStyleRealtime(patch)
+                commitSpecialStyle(patch)
             } else {
                 const updated = [...tabStops].sort((a, b) => a - b)
                 tabStops = updated
-                // Also align hangingIndent with first tab if desired
-                updateSpecialStyleRealtime({ tabStops: updated })
-                commitSpecialStyle({ tabStops: updated })
+                const patch: Record<string, any> = { tabStops: updated }
+                if (activeDragIndex === 0 || hangingIndent !== updated[0]) {
+                    hangingIndent = updated[0]
+                    patch.hangingIndent = hangingIndent
+                }
+                updateSpecialStyleRealtime(patch)
+                commitSpecialStyle(patch)
             }
         }
 
@@ -235,9 +283,10 @@
         window.removeEventListener("mouseup", onWindowMouseUp)
     }
 
-    // Units: 50px per numbered unit (1, 2, 3, 4, 5... up to 35 units = 1750px)
+    // Units: 50px per numbered unit (1, 2, 3, 4, 5... dynamically scaled to ruler width)
     const unitStep = 50
-    const totalUnits = 36
+    $: rulerWidth = rulerElem ? Math.max(1920, rulerElem.offsetWidth / (ratio || 1)) : 1920
+    $: totalUnits = Math.ceil(rulerWidth / unitStep) + 2
 </script>
 
 <!-- Word-style Ruler Bar above Textbox -->

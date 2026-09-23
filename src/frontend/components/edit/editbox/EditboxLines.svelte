@@ -96,9 +96,14 @@
     $: lineGap = item?.specialStyle?.lineGap
     $: lineRadius = item?.specialStyle?.lineRadius || 0
     $: lineBg = item?.specialStyle?.lineBg
-    $: hangingIndent = item?.specialStyle?.hangingIndent || 0
+    $: tabStops = Array.isArray(item?.specialStyle?.tabStops) && item.specialStyle.tabStops.length
+        ? [...item.specialStyle.tabStops].sort((a: number, b: number) => a - b)
+        : (item?.specialStyle?.hangingIndent ? [item.specialStyle.hangingIndent] : [90])
+    $: hangingIndent = item?.specialStyle?.hangingIndent !== undefined && item?.specialStyle?.hangingIndent !== null
+        ? item.specialStyle.hangingIndent
+        : (tabStops[0] || 0)
     $: firstLineIndent = item?.specialStyle?.firstLineIndent || 0
-    $: tabSize = item?.specialStyle?.tabStops?.[0] || hangingIndent || 90
+    $: tabSize = tabStops[0] || hangingIndent || 90
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
     $: lineStyleRadius = lineRadius ? `border-radius: ${lineRadius}px;` : ""
     $: lineStyleBg = lineBg ? `background: ${lineBg};` : ""

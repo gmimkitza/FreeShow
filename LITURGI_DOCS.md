@@ -62,11 +62,13 @@ tab-size: ${hangingIndent}px;
   * Skala ukuran unit (`1, 2, 3, 4, 5...`) dengan tick marks halus setiap 10px, 25px, dan 50px.
   * **Segitiga Atas (⯆ - First Line Indent):** Mengatur posisi awal baris pertama (tempat label `P:` atau `J:`).
   * **Segitiga Bawah (⯅ - Hanging Indent):** Mengatur batas lekukan untuk baris ke-2, ke-3, dst saat kalimat panjang membungkus.
-  * **Multi-Tab Stop Markers (Simbol Siku `L`):**
+  * **Multi-Tab Stop Markers (Simbol Siku `L` Autentik):**
+    * **Setiap Titik L Menjadi Titik Tab:** Setiap simbol `L` yang ditaruh pada mistar penggaris menjadi target titik tab (`\t`) horizontal yang presisi. Tab ke-1 melompat ke titik L pertama, tab ke-2 melompat ke titik L kedua, dst.
     * **Klik untuk Menambah:** Klik sekali di sembarang posisi mistar penggaris untuk menaruh titik tab baru (simbol siku `L`).
-    * **Geser untuk Mengatur (*Drag*):** Tarik tanda `L` ke kiri atau kanan secara langsung (*real-time*).
-    * **Garis Panduan Vertikal (*Drop Guide Line*):** Garis putus-putus berwarna turun melintasi teks ketika marker digeser.
-    * **Tarik Keluar untuk Menghapus (*Drag Off to Delete*):** Menarik tanda `L` ke bawah keluar dari mistar penggaris (atau klik ganda) akan menghapus titik tab tersebut.
+    * **Geser untuk Mengatur (*Real-Time Drag*):** Tarik tanda `L` ke kiri atau kanan. Nilai langsung tersimpan ke `showsCache` dan riwayat edit (*history*), dan posisi teks dialog serta batas gantung (*hanging indent*) ikut bergeser secara halus dan instan.
+    * **Garis Panduan Vertikal (*Drop Guide Line*):** Garis putus-putus berwarna turun melintasi teks ketika marker digeser sehingga pengguna bisa melihat karakter mana yang sejajar dengan titik tab.
+    * **Tarik Keluar untuk Menghapus (*Drag Off to Delete*):** Menarik tanda `L` ke bawah keluar dari mistar penggaris (>25px) mengubah indikator menjadi merah ("Lepas untuk hapus ×") dan menghapus titik tab saat tombol mouse dilepas (atau klik ganda untuk menghapus).
+    * **Skala Dinamis:** Skala penggaris (garis tick unit 1, 2, 3...) menyesuaikan secara otomatis mengikuti lebar aktual kotak teks.
   * Terintegrasi penuh dengan sistem **Undo / Redo (Ctrl+Z / Ctrl+Y)**.
 
 ### E. Kontrol Input Angka di Sidebar Kanan (Inspector Textbox)

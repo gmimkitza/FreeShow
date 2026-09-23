@@ -156,11 +156,76 @@
     $: lineGap = item?.specialStyle?.lineGap
     $: lineRadius = item?.specialStyle?.lineRadius || 0
     $: lineBg = item?.specialStyle?.lineBg
-    $: hangingIndent = item?.specialStyle?.hangingIndent || 0
+    $: tabStops = Array.isArray(item?.specialStyle?.tabStops) && item.specialStyle.tabStops.length
+        ? [...item.specialStyle.tabStops].sort((a: number, b: number) => a - b)
+        : (item?.specialStyle?.hangingIndent ? [item.specialStyle.hangingIndent] : [90])
+    $: hangingIndent = item?.specialStyle?.hangingIndent !== undefined && item?.specialStyle?.hangingIndent !== null
+        ? item.specialStyle.hangingIndent
+        : (tabStops[0] || 0)
     $: firstLineIndent = item?.specialStyle?.firstLineIndent || 0
-    $: tabSize = item?.specialStyle?.tabStops?.[0] || hangingIndent || 90
+    $: tabSize = tabStops[0] || hangingIndent || 90
     $: lineStyleBox = lineGap ? `gap: ${lineGap}px;` : ""
-    $: lineStyle = (lineRadius ? `border-radius: ${lineRadius}px;` : "") + (lineBg ? `background: ${lineBg};` : "") + (hangingIndent ? `;padding-left: ${hangingIndent}px;text-indent: ${firstLineIndent - hangingIndent}px;tab-size: ${tabSize}px;` : "")
+    $: lineStyle = (lineRadius ? `border-radius: ${lineRadius}px;` : "") +
+        (lineBg ? `background: ${lineBg};` : "") +
+        (hangingIndent ? `;padding-left: ${hangingIndent}px;text-indent: ${firstLineIndent - hangingIndent}px;` : "") +
+        `;tab-size: ${tabSize}px;`
+
+    function formatLineTabs(renderedText: string, tabOffset: number = 0): string {
+        if (!renderedText || !renderedText.includes("\t")) return renderedText
+
+        const parts = renderedText.split("\t")
+        let result = ""
+        const defaultStep = tabStops.length > 1 ? Math.max(20, tabStops[1] - tabStops[0]) : (tabStops[0] || 90)
+
+        for (let k = 0; k < parts.length; k++) {
+            const part = parts[k]
+            const isLast = k === parts.length - 1
+            const globalIndex = tabOffset + k
+
+            if (isLast) {
+                result += part
+            } else {
+                const targetStop = tabStops[globalIndex] !== undefined
+                    ? tabStops[globalIndex]
+                    : (tabStops[tabStops.length - 1] || 90) + (globalIndex - tabStops.length + 1) * defaultStep
+
+                const prevStop = globalIndex === 0
+                    ? firstLineIndent
+                    : (tabStops[globalIndex - 1] !== undefined
+                        ? tabStops[globalIndex - 1]
+                        : (tabStops[tabStops.length - 1] || 90) + (globalIndex - tabStops.length) * defaultStep)
+
+                const minWidth = Math.max(0, targetStop - prevStop)
+                result += `<span class="tab-col" style="display: inline-block; min-width: ${minWidth}px; vertical-align: top;">${part || "&#8203;"}</span>`
+            }
+        }
+
+        return result
+    }
+
+    function getLineTabOffsets(texts: any[]): number[] {
+        const offsets: number[] = []
+        let count = 0
+        for (const t of (texts || [])) {
+            offsets.push(count)
+            const val = t?.value || ""
+            const tabs = (val.match(/\t/g) || []).length
+            count += tabs
+        }
+        return offsets
+    }
+
+    function normalizeLineTexts(texts: any[]): any[] {
+        if (!texts || texts.length <= 1) return texts || []
+        const res = texts.map((t) => ({ ...t }))
+        for (let i = 1; i < res.length; i++) {
+            if (res[i].value && res[i].value.startsWith("\t") && res[i - 1].value && !res[i - 1].value.endsWith("\t")) {
+                res[i - 1].value += "\t"
+                res[i].value = res[i].value.slice(1)
+            }
+        }
+        return res
+    }
 
     $: textAnimation = animationStyle.text || ""
 
@@ -390,12 +455,15 @@
                                         {#if line.text?.length === 0}
                                             <span class="textContainer"><br /></span>
                                         {:else}
-                                            {#each line.text || [] as text, ti}
+                                            {@const normalizedTexts = normalizeLineTexts(line.text)}
+                                            {@const lineTabs = getLineTabOffsets(normalizedTexts)}
+                                            {#each normalizedTexts || [] as text, ti}
                                                 {@const value = text.value?.replaceAll("\n", "<br>") || "<br>"}
                                                 {@const fontRatio = text.customType?.includes("disableTemplate") && !text.customType?.includes("jw") ? customTypeRatio : 1}
+                                                {@const tabOffset = lineTabs[ti] || 0}
 
                                                 <!-- NOTE: must be on the same line for rendering ...>{@html -->
-                                                <span class="textContainer" style="{style ? getCustomStyle(text.style) : ''}{getColor(text.style)}{customStyle}{text.customType?.includes('disableTemplate') ? text.style : ''}{fontSize ? `;font-size: ${fontSize * fontRatio}px;` : style ? getCustomFontSize(text.style, outputStyle) : ''};--base-font-size: {baseFontSize}px;">{@html getTextValue(value, i, ti, updateDynamic)}</span>
+                                                <span class="textContainer" style="{style ? getCustomStyle(text.style) : ''}{getColor(text.style)}{customStyle}{text.customType?.includes('disableTemplate') ? text.style : ''}{fontSize ? `;font-size: ${fontSize * fontRatio}px;` : style ? getCustomFontSize(text.style, outputStyle) : ''};--base-font-size: {baseFontSize}px;">{@html formatLineTabs(getTextValue(value, i, ti, updateDynamic), tabOffset)}</span>
                                             {/each}
                                         {/if}
                                     </div>
@@ -441,12 +509,15 @@
                             {#if line.text?.length === 0}
                                 <span class="textContainer"><br /></span>
                             {:else}
-                                {#each line.text || [] as text, ti}
+                                {@const normalizedTexts = normalizeLineTexts(line.text)}
+                                {@const lineTabs = getLineTabOffsets(normalizedTexts)}
+                                {#each normalizedTexts || [] as text, ti}
                                     {@const value = text.value?.replaceAll("\n", "<br>") || "<br>"}
                                     {@const fontRatio = text.customType?.includes("disableTemplate") && !text.customType?.includes("jw") ? customTypeRatio : 1}
+                                    {@const tabOffset = lineTabs[ti] || 0}
 
                                     <!-- NOTE: must be on the same line for rendering ...>{@html -->
-                                    <span class="textContainer" style="{style ? getCustomStyle(text.style) : ''}{getColor(text.style)}{customStyle}{text.customType?.includes('disableTemplate') ? text.style : ''}{fontSize ? `;font-size: ${fontSize * fontRatio}px;` : style ? getCustomFontSize(text.style, outputStyle) : ''};--base-font-size: {baseFontSize}px;">{@html getTextValue(value, i, ti, updateDynamic)}</span>
+                                    <span class="textContainer" style="{style ? getCustomStyle(text.style) : ''}{getColor(text.style)}{customStyle}{text.customType?.includes('disableTemplate') ? text.style : ''}{fontSize ? `;font-size: ${fontSize * fontRatio}px;` : style ? getCustomFontSize(text.style, outputStyle) : ''};--base-font-size: {baseFontSize}px;">{@html formatLineTabs(getTextValue(value, i, ti, updateDynamic), tabOffset)}</span>
                                 {/each}
                             {/if}
                         </div>
